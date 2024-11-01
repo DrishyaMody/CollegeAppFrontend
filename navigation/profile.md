@@ -10,6 +10,92 @@ permalink: /Team/
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Team Profile Page</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Basic reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    background-color: #121212;
+    padding: 20px;
+}
+
+.profile-container {
+    max-width: 1200px;
+    width: 100%;
+    background-color: #121212;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.header {
+    text-align: center;
+    padding: 20px;
+    background-color: #2a7de1;
+    border-radius: 8px;
+    color: #ffffff;
+}
+
+.header h1 {
+    margin-bottom: 10px;
+    font-size: 2em;
+}
+
+.header p {
+    font-size: 1.2em;
+}
+
+.team-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+.team-member {
+    background-color: #000000;
+    border-radius: 8px;
+    padding: 15px;
+    text-align: center;
+    box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.team-member h2 {
+    font-size: 1.5em;
+    margin-bottom: 5px;
+}
+
+.team-member .username {
+    color: #FFFFFF;
+    margin-bottom: 10px;
+}
+
+.stats-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.stat-item h3 {
+    font-size: 0.9em;
+    color: #FFFFFF;
+    margin-bottom: 5px;
+}
+
+.stat-item p {
+    font-size: 1.1em;
+    color: #2a7de1;
+    font-weight: bold;
+}
+
+    </style>
 </head>
 <body>
 
@@ -82,5 +168,6 @@ permalink: /Team/
     // Initialize the page by fetching team data
     fetchTeamData();
 </script>
+ 
 </body>
 </html>
