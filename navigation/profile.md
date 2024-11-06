@@ -12,117 +12,176 @@ permalink: /Team/
     <link rel="stylesheet" href="styles.css">
     <style>
         /* Basic reset */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-body {
-    font-family: Arial, sans-serif;
-    display: flex;
-    justify-content: center;
-    background-color: #121212;
-    padding: 20px;
-}
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            background-color: #121212;
+            padding: 20px;
+        }
 
-.profile-container {
-    max-width: 1200px;
-    width: 100%;
-    background-color: #121212;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-}
+        .profile-container {
+            max-width: 1200px;
+            width: 100%;
+            background-color: #121212;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        }
 
-.header {
-    text-align: center;
-    padding: 20px;
-    background-color: #2a7de1;
-    border-radius: 8px;
-    color: #ffffff;
-}
+        .header {
+            text-align: center;
+            padding: 20px;
+            background-color: #2a7de1;
+            border-radius: 8px;
+            color: #ffffff;
+        }
 
-.header h1 {
-    margin-bottom: 10px;
-    font-size: 2em;
-}
+        .header h1 {
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
 
-.header p {
-    font-size: 1.2em;
-}
+        .header p {
+            font-size: 1.2em;
+        }
 
-.team-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-    padding: 20px;
-}
+        .team-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
 
-.team-member {
-    background-color: #000000;
-    border-radius: 8px;
-    padding: 15px;
-    text-align: center;
-    box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
-}
+        /* 3D card styling for team members */
+        .parent {
+            width: 100%;
+            perspective: 1000px;
+        }
 
-.team-member h2 {
-    font-size: 1.5em;
-    margin-bottom: 5px;
-}
+        .card {
+            padding-top: 50px;
+            border: 3px solid #ffffff;
+            transform-style: preserve-3d;
+            background: linear-gradient(135deg,#0000 18.75%,#f3f3f3 0 31.25%,#0000 0),
+                repeating-linear-gradient(45deg,#f3f3f3 -6.25% 6.25%,#ffffff 0 18.75%);
+            background-size: 60px 60px;
+            background-color: #f0f0f0;
+            box-shadow: rgba(142, 142, 142, 0.3) 0px 30px 30px -10px;
+            transition: all 0.5s ease-in-out;
+        }
 
-.team-member .username {
-    color: #FFFFFF;
-    margin-bottom: 10px;
-}
+        .card:hover {
+            background-position: -100px 100px, -100px 100px;
+            transform: rotate3d(0.5, 1, 0, 30deg);
+        }
 
-.stats-container {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
+        .content-box {
+            background: rgba(4, 193, 250, 0.732);
+            padding: 60px 25px 25px 25px;
+            transform-style: preserve-3d;
+        }
 
-.stat-item h3 {
-    font-size: 0.9em;
-    color: #FFFFFF;
-    margin-bottom: 5px;
-}
+        .content-box .card-title {
+            color: white;
+            font-size: 25px;
+            font-weight: 900;
+            transition: all 0.5s ease-in-out;
+            transform: translate3d(0px, 0px, 50px);
+        }
 
-.stat-item p {
-    font-size: 1.1em;
-    color: #2a7de1;
-    font-weight: bold;
-}
+        .content-box .card-content {
+            margin-top: 10px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #f2f2f2;
+            transition: all 0.5s ease-in-out;
+            transform: translate3d(0px, 0px, 30px);
+        }
 
+        .content-box .see-more {
+            cursor: pointer;
+            margin-top: 1rem;
+            display: inline-block;
+            font-weight: 900;
+            font-size: 9px;
+            color: rgb(7, 185, 255);
+            background: white;
+            padding: 0.5rem 0.7rem;
+            transition: all 0.5s ease-in-out;
+            transform: translate3d(0px, 0px, 20px);
+        }
+
+        .date-box {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            height: 60px;
+            width: 60px;
+            background: white;
+            border: 1px solid rgb(7, 185, 255);
+            padding: 10px;
+            transform: translate3d(0px, 0px, 80px);
+            box-shadow: rgba(100, 100, 111, 0.2) 0px 17px 10px -10px;
+        }
+
+        .date-box .month, .date-box .date {
+            display: block;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .date-box .month {
+            color: rgb(4, 193, 250);
+            font-size: 9px;
+        }
+
+        .date-box .date {
+            font-size: 20px;
+            color: rgb(4, 193, 250);
+        }
     </style>
 </head>
 <body>
 
 <div class="profile-container">
     <div class="header">
-        <div class="cover-photo"></div>
         <h1>Our Team</h1>
         <p>@ourteam</p>
     </div>
     <div class="team-container" id="team-container">
-        <!-- Template for each team member -->
+        <!-- Template for each team member with 3D card effect -->
         <template id="team-member-template">
-            <div class="team-member">
-                <h2 class="name"></h2>
-                <p class="username"></p>
-                <div class="stats-container">
-                    <div class="stat-item">
-                        <h3>Balance</h3>
-                        <p class="balance"></p>
+            <div class="parent">
+                <div class="card">
+                    <div class="content-box">
+                        <h2 class="card-title name"></h2>
+                        <p class="card-content username"></p>
+                        <div class="stats-container">
+                            <div class="stat-item">
+                                <h3>Balance</h3>
+                                <p class="balance"></p>
+                            </div>
+                            <div class="stat-item">
+                                <h3>Progress Time</h3>
+                                <p class="progress-time"></p>
+                            </div>
+                            <div class="stat-item">
+                                <h3>ROI</h3>
+                                <p class="roi"></p>
+                            </div>
+                        </div>
+                        <span class="see-more">See More</span>
                     </div>
-                    <div class="stat-item">
-                        <h3>Progress Time</h3>
-                        <p class="progress-time"></p>
-                    </div>
-                    <div class="stat-item">
-                        <h3>ROI</h3>
-                        <p class="roi"></p>
+                    <div class="date-box">
+                        <span class="month">JUNE</span>
+                        <span class="date">29</span>
                     </div>
                 </div>
             </div>
@@ -131,7 +190,6 @@ body {
 </div>
 
 <script>
-    // Mock data to simulate backend data (replace this with a real fetch request in production)
     const teamData = [
         { name: "Alice Smith", username: "@alice", balance: "$1,800", progressTime: "100 hrs", roi: "12%" },
         { name: "Bob Johnson", username: "@bob", balance: "$2,200", progressTime: "110 hrs", roi: "14%" },
@@ -139,7 +197,6 @@ body {
         { name: "Diana Prince", username: "@diana", balance: "$2,400", progressTime: "115 hrs", roi: "16%" }
     ];
 
-    // Function to populate team members using the template
     function populateTeamMembers(data) {
         const teamContainer = document.getElementById('team-container');
         const template = document.getElementById('team-member-template').content;
@@ -147,27 +204,19 @@ body {
         data.forEach(member => {
             const memberElement = document.importNode(template, true);
 
-            // Fill in the team member's data
             memberElement.querySelector('.name').textContent = member.name;
             memberElement.querySelector('.username').textContent = member.username;
             memberElement.querySelector('.balance').textContent = member.balance;
             memberElement.querySelector('.progress-time').textContent = member.progressTime;
             memberElement.querySelector('.roi').textContent = member.roi;
 
-            // Append the filled template to the team container
             teamContainer.appendChild(memberElement);
         });
     }
 
-    // Fetch data from the backend (replace the mock data with a real fetch in production)
-    function fetchTeamData() {
-        // Replace with a real API request, e.g., fetch('/api/team')
-        populateTeamMembers(teamData);
-    }
-
-    // Initialize the page by fetching team data
-    fetchTeamData();
+    // Fetch and display team members
+    populateTeamMembers(teamData);
 </script>
- 
+
 </body>
 </html>
