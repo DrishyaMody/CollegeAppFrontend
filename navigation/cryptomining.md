@@ -920,7 +920,6 @@ permalink: /mining/
                     const dailyRevenue = calculateDailyRevenue(gpu);
                     const dailyPowerCost = calculateDailyPowerCost(gpu);
                     const dailyProfit = dailyRevenue - dailyPowerCost;
-                    const roi = gpu.price / dailyProfit;
                     const gpuCard = document.createElement('div');
                     gpuCard.className = 'gpu-card mb-4';
                     // Rest of your existing card HTML...
@@ -944,7 +943,6 @@ permalink: /mining/
                                 </div>
                                 <div class="mt-2 text-sm">
                                     <p class="text-gray-400">Efficiency: ${gpu.efficiency.toFixed(3)} MH/W</p>
-                                    <p class="text-gray-400">ROI: ${roi.toFixed(1)} days</p>
                                 </div>
                             </div>
                             <div class="text-right ml-4">
