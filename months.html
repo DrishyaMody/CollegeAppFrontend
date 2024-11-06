@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enter How Many Months Ago You Want to Play</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        input[type="number"] {
+            padding: 10px;
+            font-size: 1rem;
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 1rem;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Enter How Many Months Ago You Want to Play</h1>
+    <input type="number" id="monthsAgo" placeholder="Number of months ago" min="1">
+    <button onclick="goToGame()">Submit</button>
+
+    <script>
+        function goToGame() {
+            const monthsAgo = document.getElementById("monthsAgo").value;
+            if (monthsAgo) {
+                // Redirect to game.html with monthsAgo as a query parameter
+                window.location.href = `/CollegeAppFrontend/game/`;
+            } else {
+                alert("Please enter a valid number of months.");
+            }
+        }
+    </script>
+</body>
+</html>

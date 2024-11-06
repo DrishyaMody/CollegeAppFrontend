@@ -1,0 +1,84 @@
+---
+layout: post
+title: Crypto Game
+permalink: /nextPage/
+---
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Selected Cryptocurrencies</title>
+    <style>
+        .starting-amount {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: #FFFFFF;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        .crypto-allocation {
+            margin-top: 20px;
+        }
+        .allocation-input {
+            width: 100px;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="starting-amount">Starting Amount: $5000</div>
+    
+    <h1>Your Selected Cryptocurrencies</h1>
+    <div id="selected-cryptos" class="crypto-allocation"></div>
+    <p id="remaining-amount">Remaining Amount: $5000</p>
+    <button id="submitAllocations" disabled>Submit Allocations</button>
+
+    <script>
+        const TOTAL_AMOUNT = 5000;
+        let remainingAmount = TOTAL_AMOUNT;
+
+        function displaySelectedCryptos() {
+            const selectedCryptos = JSON.parse(localStorage.getItem("selectedCryptos"));
+            
+            if (!selectedCryptos || selectedCryptos.length === 0) {
+                document.getElementById("selected-cryptos").innerHTML = "<p>No cryptocurrencies selected.</p>";
+                return;
+            }
+            
+            const selectedDiv = document.getElementById("selected-cryptos");
+            selectedCryptos.forEach((cryptoName) => {
+                const cryptoDiv = document.createElement("div");
+
+                const label = document.createElement("label");
+                label.textContent = `${cryptoName}: $`;
+                
+                const input = document.createElement("input");
+                input.type = "number";
+                input.classList.add("allocation-input");
+                input.placeholder = "0";
+                input.min = 0;
+                input.addEventListener("input", () => handleAllocationInput(input));
+
+                cryptoDiv.appendChild(label);
+                cryptoDiv.appendChild(input);
+                selectedDiv.appendChild(cryptoDiv);
+            });
+        }
+
+        function handleAllocationInput(input) {
+            const allocations = Array.from(document.querySelectorAll(".allocation-input"))
+                .map(input => parseFloat(input.value) || 0);
+            const totalAllocated = allocations.reduce((acc, curr) => acc + curr, 0);
+
+            remainingAmount = TOTAL_AMOUNT - totalAllocated;
+            document.getElementById("remaining-amount").textContent = `Remaining Amount: $${remainingAmount}`;
+
+            // Enable the submit button only if all funds are allocated
+            document.getElementById("submitAllocations").disabled = remainingAmount !== 0;
+        }
+
+        // Call the function on page load
+        displaySelectedCryptos();
+    </script>
+</body>
+</html>

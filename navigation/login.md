@@ -4,201 +4,201 @@ title: Login Page
 type: issues
 permalink: /login/
 ---
----
-layout: page 
-title: Login
-permalink: /login
-search_exclude: true
-menu: nav/home.html
-show_reading_time: false 
----
-
-<style>
-.login-container {
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap; /* allows the cards to wrap onto the next line if the screen is too small */
-}
-
-.login-card {
-    margin-top: 0; /* remove the top margin */
-    width: 45%;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    padding: 20px;
-    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
-    margin-bottom: 20px;
-    overflow-x: auto; /* Enable horizontal scrolling */
-}
-
-.login-card h1 {
-    margin-bottom: 20px;
-}
-
-.signup-card {
-    margin-top: 0; /* remove the top margin */
-    width: 45%;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    padding: 20px;
-    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
-    margin-bottom: 20px;
-    overflow-x: auto; /* Enable horizontal scrolling */
-}
-
-.signup-card h1 {
-    margin-bottom: 20px;
-}
-
-</style>
-
-<div class="login-container">
-    <!-- Python Login Form -->
-    <div class="login-card">
-        <h1 id="pythonTitle">User Login (Python/Flask)</h1>
-        <form id="pythonForm" onsubmit="pythonLogin(); return false;">
-            <p>
-                <label>
-                    GitHub ID:
-                    <input type="text" name="uid" id="uid" required>
-                </label>
-            </p>
-            <p>
-                <label>
-                    Password:
-                    <input type="password" name="password" id="password" required>
-                </label>
-            </p>
-            <p>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="{{site.baseurl}}/assets/js/api/config.js"></script>
+    <style>
+        /* Global Styles */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #F0F4F8;
+        }
+        /* Container */
+        .auth-container {
+            display: flex;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            width: 600px;
+        }
+        /* Form Wrapper */
+        .form-wrapper {
+            padding: 2rem;
+            width: 50%;
+        }
+        /* Form Titles */
+        h2 {
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 1rem;
+        }
+        /* Form Inputs */
+        label {
+            display: block;
+            margin-top: 1rem;
+            font-weight: bold;
+            color: #555;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            color: #333;
+        }
+        /* Submit Buttons */
+        button {
+            margin-top: 1.5rem;
+            width: 100%;
+            padding: 10px;
+            font-size: 1rem;
+            color: #fff;
+            background-color: #007BFF;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #0056B3;
+        }
+        /* Error and Success Messages */
+        .message {
+            color: red;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+        .success {
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <!-- Login Form -->
+        <div class="form-wrapper" id="loginSection">
+            <h2>Login</h2>
+            <form id="loginForm">
+                <label for="loginEmail">Email:</label>
+                <input type="email" id="loginEmail" required>
+                <label for="loginPassword">Password:</label>
+                <input type="password" id="loginPassword" required>
                 <button type="submit">Login</button>
-            </p>
-            <p id="message" style="color: red;"></p>
-        </form>
-    </div>
-    <div class="signup-card">
-        <h1 id="signupTitle">Sign Up</h1>
-        <form id="signupForm" onsubmit="signup(); return false;">
-            <p>
-                <label>
-                    Name:
-                    <input type="text" name="name" id="name" required>
-                </label>
-            </p>
-            <p>
-                <label>
-                    GitHub ID:
-                    <input type="text" name="signupUid" id="signupUid" required>
-                </label>
-            </p>
-            <p>
-                <label>
-                    Password:
-                    <input type="password" name="signupPassword" id="signupPassword" required>
-                </label>
-            </p>
-            <p>
-                <label>
-                    <input type="checkbox" name="kasmNeeded" id="kasmNeeded">
-                    Kasm Server Needed
-                </label>
-            </p>
-            <p>
+                <p id="loginMessage" class="message"></p>
+            </form>
+        </div>
+        <!-- Signup Form -->
+        <div class="form-wrapper" id="signupSection">
+            <h2>Sign Up</h2>
+            <form id="signupForm">
+                <label for="signupName">Name:</label>
+                <input type="text" id="signupName" required>
+                <label for="signupEmail">Email:</label>
+                <input type="email" id="signupEmail" required>
+                <label for="signupPassword">Password:</label>
+                <input type="password" id="signupPassword" required>
+                <label for="signupDob">Date of Birth (MM-DD-YYYY):</label>
+                <input type="text" id="signupDob" required>
                 <button type="submit">Sign Up</button>
-            </p>
-            <p id="signupMessage" style="color: green;"></p>
-        </form>
+                <p id="signupMessage" class="message"></p>
+            </form>
+        </div>
     </div>
-</div>
-
-<script type="module">
-    import { login, pythonURI, fetchOptions } from '{{site.baseurl}}/assets/js/api/config.js';
-
-    // Function to handle Python login
-    window.pythonLogin = function() {
-        const options = {
-            URL: `${pythonURI}/api/authenticate`,
-            callback: pythonDatabase,
-            message: "message",
-            method: "POST",
-            cache: "no-cache",
-            body: {
-                uid: document.getElementById("uid").value,
-                password: document.getElementById("password").value,
-            }
+    <script>
+        // Define fetchOptions inline
+        const fetchOptions = {
+            method: 'GET',
+            mode: 'cors',
+            cache: 'default',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Origin': 'client'
+            },
         };
-        login(options);
-    }
-
-    // Function to handle signup
-    window.signup = function() {
-    const signupButton = document.querySelector(".signup-card button");
-
-    // Disable the button and change its color
-    signupButton.disabled = true;
-    signupButton.style.backgroundColor = '#d3d3d3'; // Light gray to indicate disabled state
-
-    const signupOptions = {
-        URL: `${pythonURI}/api/user`,
-        method: "POST",
-        cache: "no-cache",
-        body: {
-            name: document.getElementById("name").value,
-            uid: document.getElementById("signupUid").value,
-            password: document.getElementById("signupPassword").value,
-            kasm_server_needed: document.getElementById("kasmNeeded").checked,
-        }
-    };
-
-    fetch(signupOptions.URL, {
-        method: signupOptions.method,
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(signupOptions.body)
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`Signup failed: ${response.status}`);
-        }
-        return response.json();
-    })
-    .then(data => {
-        document.getElementById("signupMessage").textContent = "Signup successful!";
-        // Optionally redirect to login page or handle as needed
-        // window.location.href = '{{site.baseurl}}/profile';
-    })
-    .catch(error => {
-        console.error("Signup Error:", error);
-        document.getElementById("signupMessage").textContent = `Signup Error: ${error.message}`;
-        // Re-enable the button if there is an error
-        signupButton.disabled = false;
-        signupButton.style.backgroundColor = ''; // Reset to default color
-    });
-}
-
-
-    // Function to fetch and display Python data
-    function pythonDatabase() {
-        const URL = `${pythonURI}/api/id`;
-
-        fetch(URL, fetchOptions)
+        // Re-define the login function here
+        function login(options) {
+            const requestOptions = {
+                ...fetchOptions,
+                method: options.method,
+                body: JSON.stringify(options.body)
+            };
+            document.getElementById(options.message).textContent = "";
+            fetch(options.URL, requestOptions)
             .then(response => {
                 if (!response.ok) {
-                    throw new Error(`Flask server response: ${response.status}`);
+                    const errorMsg = 'Login error: ' + response.status;
+                    console.log(errorMsg);
+                    document.getElementById(options.message).textContent = errorMsg;
+                    return;
                 }
-                return response.json();
-            })
-            .then(data => {
-                window.location.href = '{{site.baseurl}}/profile';
+                options.callback();
             })
             .catch(error => {
-                console.error("Python Database Error:", error);
-                const errorMsg = `Python Database Error: ${error.message}`;
+                console.log('Possible CORS or Service Down error: ' + error);
+                document.getElementById(options.message).textContent = 'Possible CORS or service down error: ' + error;
             });
-    }
-
-    // Call relevant database functions on the page load
-    window.onload = function() {
-         pythonDatabase();
-    };
-</script>
+        }
+        // Function to handle login
+        document.getElementById("loginForm").addEventListener("submit", function (e) {
+            e.preventDefault();
+            const loginURL = "http://127.0.0.1:8088/authenticate";
+            login({
+                URL: loginURL,
+                method: "POST",
+                body: {
+                    email: document.getElementById("loginEmail").value,
+                    password: document.getElementById("loginPassword").value
+                },
+                message: "loginMessage",
+                callback: () => {
+                    document.getElementById("loginMessage").classList.add("success");
+                    document.getElementById("loginMessage").textContent = "Login successful!";
+                    setTimeout(() => window.location.href = "/CollegeAppFrontend/teams/", 1000);  // Redirect to /portfolio on success
+                }
+            });
+        });
+        // Function to handle signup
+        document.getElementById("signupForm").addEventListener("submit", function (e) {
+            e.preventDefault();
+            const signupURL = "http://127.0.0.1:8088/api/person/create";
+            fetch(signupURL, {
+                ...fetchOptions,
+                method: "POST",
+                body: JSON.stringify({
+                    email: document.getElementById("signupEmail").value,
+                    password: document.getElementById("signupPassword").value,
+                    name: document.getElementById("signupName").value,
+                    dob: document.getElementById("signupDob").value
+                })
+            })
+            .then(response => {
+                if (response.ok) {
+                    document.getElementById("signupMessage").classList.add("success");
+                    document.getElementById("signupMessage").textContent = "Signup successful! Redirecting...";
+                    setTimeout(() => window.location.href = "/CollegeAppFrontend/teams", 1000);  // Redirect to /portfolio on success
+                } else {
+                    return response.json().then(data => {
+                        throw new Error(data.message || "Signup failed.");
+                    });
+                }
+            })
+            .catch(error => {
+                document.getElementById("signupMessage").textContent = error.message;
+            });
+        });
+    </script>
+</body>
+</html>

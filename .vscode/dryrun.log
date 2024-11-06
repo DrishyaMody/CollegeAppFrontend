@@ -1,0 +1,73 @@
+make --dry-run --always-make --keep-going --print-directory
+make: Entering directory `/Users/arnavnadar/vscode/CryptoGameFrontend'
+echo "Stopping server..."
+# kills process running on port 4100
+lsof -ti :4100 | xargs kill >/dev/null 2>&1 || true
+echo "Stopping logging process..."
+# kills previously running logging processes
+ps aux | awk -v log_file=/tmp/jekyll4100.log '$0 ~ "tail -f " log_file { print $2 }' | xargs kill >/dev/null 2>&1 || true
+# removes log
+rm -f /tmp/jekyll4100.log
+echo "Converting source _notebooks/Foundation/A-pair_programming/2023-08-17-pair_habits.ipynb to destination _posts/Foundation/A-pair_programming/2023-08-17-pair_habits_IPYNB_2_.md"
+mkdir -p _posts/Foundation/A-pair_programming
+python -c 'import sys; from scripts.convert_notebooks import convert_single_notebook; convert_single_notebook(sys.argv[1])' "_notebooks/Foundation/A-pair_programming/2023-08-17-pair_habits.ipynb"
+echo "Converting source _notebooks/Foundation/A-pair_programming/2023-08-16-pair_showcase.ipynb to destination _posts/Foundation/A-pair_programming/2023-08-16-pair_showcase_IPYNB_2_.md"
+mkdir -p _posts/Foundation/A-pair_programming
+python -c 'import sys; from scripts.convert_notebooks import convert_single_notebook; convert_single_notebook(sys.argv[1])' "_notebooks/Foundation/A-pair_programming/2023-08-16-pair_showcase.ipynb"
+echo "Converting source _notebooks/Foundation/B-tools_and_equipment/2023-08-21-devops_tools-home.ipynb to destination _posts/Foundation/B-tools_and_equipment/2023-08-21-devops_tools-home_IPYNB_2_.md"
+mkdir -p _posts/Foundation/B-tools_and_equipment
+python -c 'import sys; from scripts.convert_notebooks import convert_single_notebook; convert_single_notebook(sys.argv[1])' "_notebooks/Foundation/B-tools_and_equipment/2023-08-21-devops_tools-home.ipynb"
+echo "Converting source _notebooks/Foundation/B-tools_and_equipment/2023-08-21-devops_tools-setup.ipynb to destination _posts/Foundation/B-tools_and_equipment/2023-08-21-devops_tools-setup_IPYNB_2_.md"
+mkdir -p _posts/Foundation/B-tools_and_equipment
+python -c 'import sys; from scripts.convert_notebooks import convert_single_notebook; convert_single_notebook(sys.argv[1])' "_notebooks/Foundation/B-tools_and_equipment/2023-08-21-devops_tools-setup.ipynb"
+echo "Converting source _notebooks/Foundation/B-tools_and_equipment/2023-08-23-devops-hacks.ipynb to destination _posts/Foundation/B-tools_and_equipment/2023-08-23-devops-hacks_IPYNB_2_.md"
+mkdir -p _posts/Foundation/B-tools_and_equipment
+python -c 'import sys; from scripts.convert_notebooks import convert_single_notebook; convert_single_notebook(sys.argv[1])' "_notebooks/Foundation/B-tools_and_equipment/2023-08-23-devops-hacks.ipynb"
+echo "Converting source _notebooks/Foundation/B-tools_and_equipment/2023-08-23-devops-githhub_pages-play.ipynb to destination _posts/Foundation/B-tools_and_equipment/2023-08-23-devops-githhub_pages-play_IPYNB_2_.md"
+mkdir -p _posts/Foundation/B-tools_and_equipment
+python -c 'import sys; from scripts.convert_notebooks import convert_single_notebook; convert_single_notebook(sys.argv[1])' "_notebooks/Foundation/B-tools_and_equipment/2023-08-23-devops-githhub_pages-play.ipynb"
+echo "Converting source _notebooks/Foundation/B-tools_and_equipment/2023-08-19-devops_accounts.ipynb to destination _posts/Foundation/B-tools_and_equipment/2023-08-19-devops_accounts_IPYNB_2_.md"
+mkdir -p _posts/Foundation/B-tools_and_equipment
+python -c 'import sys; from scripts.convert_notebooks import convert_single_notebook; convert_single_notebook(sys.argv[1])' "_notebooks/Foundation/B-tools_and_equipment/2023-08-19-devops_accounts.ipynb"
+echo "Converting source _notebooks/Foundation/B-tools_and_equipment/2023-08-22-devops_tools-verify.ipynb to destination _posts/Foundation/B-tools_and_equipment/2023-08-22-devops_tools-verify_IPYNB_2_.md"
+mkdir -p _posts/Foundation/B-tools_and_equipment
+python -c 'import sys; from scripts.convert_notebooks import convert_single_notebook; convert_single_notebook(sys.argv[1])' "_notebooks/Foundation/B-tools_and_equipment/2023-08-22-devops_tools-verify.ipynb"
+echo "Converting source _notebooks/Foundation/2024-08-21-sprint1_plan.ipynb to destination _posts/Foundation/2024-08-21-sprint1_plan_IPYNB_2_.md"
+mkdir -p _posts/Foundation
+python -c 'import sys; from scripts.convert_notebooks import convert_single_notebook; convert_single_notebook(sys.argv[1])' "_notebooks/Foundation/2024-08-21-sprint1_plan.ipynb"
+echo "Starting server..."
+nohup bundle exec jekyll serve -H 127.0.0.1 -P 4100 > /tmp/jekyll4100.log 2>&1 & \
+		PID=$!; \
+		echo "Server PID: $PID"
+until [ -f /tmp/jekyll4100.log ]; do sleep 1; done
+echo "Terminal logging starting, watching server..."
+# tail and awk work together to extract Jekyll regeneration messages
+# When a _notebook is detected in the log, call make convert in the background
+# Note: We use the "if ($0 ~ /_notebooks\/.*\.ipynb/) { system(\"make convert &\") }" to call make convert
+(tail -f /tmp/jekyll4100.log | awk '/Server address: http:\/\/127.0.0.1:4100\/CollegeAppFrontend\// { serverReady=1 } \
+	serverReady && /^ *Regenerating:/ { regenerate=1 } \
+	regenerate { \
+		if (/^[[:blank:]]*$/) { regenerate=0 } \
+		else { \
+			print; \
+			if ($0 ~ /_notebooks\/.*\.ipynb/) { system("make convert &") } \
+		} \
+	}') 2>/dev/null &
+# start an infinite loop with timeout to check log status
+for ((COUNTER = 0; ; COUNTER++)); do \
+		if grep -q "Server address:" /tmp/jekyll4100.log; then \
+			echo "Server started in $COUNTER seconds"; \
+			break; \
+		fi; \
+		if [ $COUNTER -eq 60 ]; then \
+			echo "Server timed out after $COUNTER seconds."; \
+			echo "Review errors from /tmp/jekyll4100.log."; \
+			cat /tmp/jekyll4100.log; \
+			exit 1; \
+		fi; \
+		sleep 1; \
+	done
+# outputs startup log, removes last line ($d) as ctl-c message is not applicable for background process
+sed '$d' /tmp/jekyll4100.log
+make: Leaving directory `/Users/arnavnadar/vscode/CryptoGameFrontend'
+ 

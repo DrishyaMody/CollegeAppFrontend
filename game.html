@@ -1,0 +1,72 @@
+---
+layout: post
+title: Crypto Game
+permalink: /game/
+---
+</head>
+<body>
+    <h1>Select Your Cryptocurrencies</h1>
+    <div id="crypto-options"></div>
+    <button id="nextButton" disabled>Next</button>
+
+    <script>
+        const API_URL = 'http://127.0.0.1:8088/api/crypto/live'; 
+
+        async function fetchCryptoData() {
+            try {
+                const response = await fetch(API_URL);
+                const data = await response.json();
+                console.log("Fetched data:", data); // Log the fetched data to debug
+                displayCryptoOptions(data.slice(0, 10)); 
+            } catch (error) {
+                console.error("Failed to fetch cryptocurrency data:", error);
+            }
+        }
+
+        function displayCryptoOptions(cryptos) {
+            const cryptoOptionsDiv = document.getElementById("crypto-options");
+            cryptos.forEach((crypto, index) => {
+                // Create a checkbox for each crypto
+                const checkbox = document.createElement("input");
+                checkbox.type = "checkbox";
+                checkbox.id = `crypto-${index}`;
+                checkbox.value = crypto.name;
+                checkbox.name = "crypto";
+                checkbox.addEventListener("change", handleCheckboxChange);
+
+                // Create a label for each crypto
+                const label = document.createElement("label");
+                label.htmlFor = `crypto-${index}`;
+                label.textContent = crypto.name;
+
+                // Add checkbox and label to the div
+                cryptoOptionsDiv.appendChild(checkbox);
+                cryptoOptionsDiv.appendChild(label);
+                cryptoOptionsDiv.appendChild(document.createElement("br"));
+            });
+        }
+
+        function handleCheckboxChange() {
+            const selectedCryptos = document.querySelectorAll('input[name="crypto"]:checked');
+            const nextButton = document.getElementById("nextButton");
+
+            // Enable next button if exactly three are selected
+            nextButton.disabled = selectedCryptos.length !== 3;
+        }
+
+        document.getElementById("nextButton").addEventListener("click", () => {
+            const selectedCryptos = Array.from(document.querySelectorAll('input[name="crypto"]:checked'))
+                .map(checkbox => checkbox.value);
+            
+            // Save selected cryptos in localStorage
+            localStorage.setItem("selectedCryptos", JSON.stringify(selectedCryptos));
+            
+            // Redirect to the next page
+            window.location.href = "/CollegeAppFrontend/nextPage/"; // Ensure this matches the permalink in nextPage.html
+        });
+
+        // Fetch and display crypto options on page load
+        fetchCryptoData();
+    </script>
+</body>
+</html>
