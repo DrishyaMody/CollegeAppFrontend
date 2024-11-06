@@ -46,82 +46,44 @@ permalink: /leaderboard/
             font-size: 2em;
         }
 
-        /* CTA Button Style for Team Links */
-        .cta {
-            position: relative;
-            display: block;
-            margin: 15px auto;
-            padding: 12px 18px;
-            text-align: center;
-            text-decoration: none;
-            transition: all 0.2s ease;
-            border: none;
-            background: none;
-            cursor: pointer;
-        }
-
-        .cta:before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            display: block;
-            border-radius: 50px;
-            background: #b1dae7;
-            width: 45px;
-            height: 45px;
-            transition: all 0.3s ease;
-        }
-
-        .cta span {
-            position: relative;
-            font-family: "Ubuntu", sans-serif;
+        /* New Button Style for Team Links */
+        button {
+            background: #fbca1f;
+            font-family: inherit;
+            padding: 0.6em 1.3em;
+            font-weight: 900;
             font-size: 18px;
-            font-weight: 700;
-            letter-spacing: 0.05em;
-            color: #234567;
-        }
-
-        .cta svg {
-            position: relative;
-            top: 0;
-            margin-left: 10px;
-            fill: none;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-            stroke: #234567;
-            stroke-width: 2;
-            transform: translateX(-5px);
-            transition: all 0.3s ease;
-        }
-
-        .cta:hover:before {
+            border: 3px solid black;
+            border-radius: 0.4em;
+            box-shadow: 0.1em 0.1em;
+            cursor: pointer;
             width: 100%;
-            background: #b1dae7;
+            text-align: left;
         }
 
-        .cta:hover svg {
-            transform: translateX(0);
+        button:hover {
+            transform: translate(-0.05em, -0.05em);
+            box-shadow: 0.15em 0.15em;
         }
 
-        .cta:active {
-            transform: scale(0.95);
+        button:active {
+            transform: translate(0.05em, 0.05em);
+            box-shadow: 0.05em 0.05em;
         }
 
         .stats-container {
             display: flex;
             justify-content: space-between;
             padding: 10px 0;
-            border-top: 1px solid #444;
-            border-bottom: 1px solid #444;
-            color: #234567;
+            color: black;
             font-weight: bold;
         }
 
         .team-members {
             font-size: 0.9em;
-            color: #cccccc;
+            color: #333333;
         }
+
     </style>
 </head>
 <body>
@@ -134,18 +96,20 @@ permalink: /leaderboard/
     <div class="team-list" id="team-list">
         <!-- Team template for each leaderboard entry -->
         <template id="team-template">
-            <a class="cta" href="#" target="_blank"> <!-- Link placeholder -->
-                <div class="team-card">
-                    <div class="rank">#<span class="rank-number"></span></div>
-                    <div class="stats-container">
-                        <div class="balance">Balance: <span class="balance-amount"></span></div>
-                        <div class="roi">ROI: <span class="roi-percentage"></span></div>
+            <a href="#" target="_blank"> <!-- Link placeholder -->
+                <button>
+                    <div class="team-card">
+                        <div class="rank">#<span class="rank-number"></span> <span class="team-name"></span></div>
+                        <div class="stats-container">
+                            <div class="balance">Balance: <span class="balance-amount"></span></div>
+                            <div class="roi">ROI: <span class="roi-percentage"></span></div>
+                        </div>
+                        <div class="team-members">
+                            <strong>Team Members:</strong>
+                            <ul class="member-list"></ul>
+                        </div>
                     </div>
-                    <div class="team-members">
-                        <strong>Team Members:</strong>
-                        <ul class="member-list"></ul>
-                    </div>
-                </div>
+                </button>
             </a>
         </template>
     </div>
@@ -175,9 +139,10 @@ permalink: /leaderboard/
 
             // Fill in the rank, balance, ROI, members, and link
             teamElement.querySelector('.rank-number').textContent = index + 1;
+            teamElement.querySelector('.team-name').textContent = team.name;
             teamElement.querySelector('.balance-amount').textContent = `$${team.balance.toLocaleString()}`;
             teamElement.querySelector('.roi-percentage').textContent = team.roi;
-            teamElement.querySelector('.cta').href = team.link;
+            teamElement.querySelector('a').href = team.link;
 
             const memberList = teamElement.querySelector('.member-list');
             team.members.forEach(member => {
