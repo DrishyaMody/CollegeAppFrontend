@@ -903,6 +903,21 @@ permalink: /mining/
             };
             return classes[category] || '';
         }
+        function openGpuShop() {
+            const modal = document.getElementById('gpu-shop-modal');
+            modal.classList.remove('hidden');
+        }
+        // Add close shop functionality
+        document.getElementById('close-shop').addEventListener('click', () => {
+            const modal = document.getElementById('gpu-shop-modal');
+            modal.classList.add('hidden');
+        });
+        // Close modal when clicking outside
+        document.getElementById('gpu-shop-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'gpu-shop-modal') {
+                e.target.classList.add('hidden');
+            }
+        });
     </script>
 </body>
 </html>
