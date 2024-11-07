@@ -10,7 +10,6 @@ permalink: /portfolio/
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crypto Investment Portfolio</title>
     <link rel="stylesheet" href="{{site.baseurl}}/assets/css/portfolio.css">
-    <script src="{{site.baseurl}}/assets/js/api/config.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         /* Basic Styling */
@@ -141,21 +140,51 @@ permalink: /portfolio/
             background-color: #f44336;
             color: #fff;
         }
+        
+        /* Navbar */
+        .navbar {
+            width: 100%;
+            background-color: #333;
+            color: #fff;
+            display: flex;
+            justify-content: space-between;
+            padding: 1rem;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        .navbar .links {
+            display: flex;
+            gap: 2rem;
+        }
+        .navbar .links a {
+            color: #fff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .navbar .links a:hover {
+            color: #ddd;
+        }
     </style>
 </head>
 <body>
+    <div class="navbar">
+        <div class="links">
+            <a href="/CollegeAppFrontend/portfolio" id="portfolioLink">Investing Portfolio</a>
+            <a href="/CollegeAppFrontend/mining" id="miningLink">Crypto Mining</a>
+            <a href="/CollegeAppFrontend/team" id="TeamLink">Team Stats</a>
+            <a href="/CollegeAppFrontend/Leaderboard" id="leaderboardLink">Leaderboard</a>
+        </div>
+    </div>
+
     <div class="container">
         <h1>Crypto Investment Portfolio</h1>
-        <!-- User Balance Display -->
         <div class="user-balance">
             Current Balance: $<span id="user-balance">5000</span>
         </div>
-        <!-- Crypto List Section -->
-        <div class="crypto-list" id="crypto-list-container">
-            <!-- Dynamically populated list of cryptocurrencies -->
-        </div>
+        <div class="crypto-list" id="crypto-list-container"></div>
     </div>
-    <!-- Modal for Crypto Details -->
+
     <div class="modal" id="crypto-modal">
         <div class="modal-content">
             <span class="modal-close" onclick="closeModal()">&times;</span>
@@ -168,58 +197,48 @@ permalink: /portfolio/
             <button class="btn btn-invest" onclick="investInCrypto()">Invest</button>
         </div>
     </div>
+
     <script type="module">
         import { javaURI, fetchOptions } from '{{site.baseurl}}/assets/js/api/config.js';
 
-        const userBalance = 5000;  // Example starting balance
+        let userBalance = 5000;
         document.getElementById('user-balance').innerText = userBalance;
 
-        // Fetch and Display Cryptos
-        function fetchCryptos() {
-            fetch(`${javaURI}/api/crypto/live`, fetchOptions)
-                .then(response => response.json())
-                .then(cryptos => {
-                    const cryptoListContainer = document.getElementById('crypto-list-container');
-                    cryptoListContainer.innerHTML = '';
-                    cryptos.forEach(crypto => {
-                        const cryptoItem = document.createElement('div');
-                        cryptoItem.className = 'crypto-item';
-                        cryptoItem.innerHTML = `<strong>${crypto.name}</strong><br>$${crypto.price.toFixed(2)}`;
-                        cryptoItem.onclick = () => openModal(crypto);
-                        cryptoListContainer.appendChild(cryptoItem);
-                    });
-                })
-                .catch(error => console.log('Error fetching cryptos:', error));
+        async function fetchCryptos() {
+            try {
+                const response = await fetch(`${javaURI}/api/crypto/live`, fetchOptions);
+                if (!response.ok) throw new Error(`Failed to fetch crypto data: ${response.status} ${response.statusText}`);
+                const cryptos = await response.json();
+                const cryptoListContainer = document.getElementById('crypto-list-container');
+                cryptoListContainer.innerHTML = '';
+                cryptos.forEach(crypto => {
+                    const cryptoItem = document.createElement('div');
+                    cryptoItem.className = 'crypto-item';
+                    cryptoItem.innerHTML = `<strong>${crypto.name}</strong><br>$${crypto.price.toFixed(2)}`;
+                    cryptoItem.onclick = () => openModal(crypto);
+                    cryptoListContainer.appendChild(cryptoItem);
+                });
+            } catch (error) {
+                console.log('Error fetching cryptos:', error);
+            }
         }
 
-        // Open Modal with Crypto Details
         function openModal(crypto) {
             document.getElementById('modal-crypto-name').innerText = crypto.name;
             document.getElementById('modal-crypto-price').innerText = crypto.price.toFixed(2);
             document.getElementById('modal-crypto-change').innerText = crypto.changePercentage.toFixed(2);
-
-            // Fetch and display trend data
-            fetchCryptoTrend(crypto.name.toLowerCase(), 7); // Adjust days as needed
-
+            fetchCryptoTrend(crypto.name.toLowerCase(), 7);
             document.getElementById('crypto-modal').style.display = 'flex';
         }
 
-        // Function to fetch and render the trend chart
         async function fetchCryptoTrend(cryptoId, days) {
             try {
-                const response = await fetch(`${javaURI}/api/crypto/trend?cryptoId=${cryptoId}&days=${days}`);
+                const response = await fetch(`${javaURI}/api/crypto/trend?cryptoId=${cryptoId}&days=${days}`, fetchOptions);
+                if (!response.ok) throw new Error("Failed to fetch trend data");
                 const prices = await response.json();
-
-                // Generate labels for each day
                 const labels = Array.from({ length: prices.length }, (_, i) => `Day ${i + 1}`);
-
-                // Get canvas context for chart
                 const ctx = document.getElementById('crypto-chart').getContext('2d');
-
-                // Destroy previous chart instance if exists to avoid overlap
                 if (window.cryptoChart) window.cryptoChart.destroy();
-
-                // Create new line chart
                 window.cryptoChart = new Chart(ctx, {
                     type: 'line',
                     data: {
@@ -236,12 +255,8 @@ permalink: /portfolio/
                     options: {
                         responsive: true,
                         scales: {
-                            x: {
-                                title: { display: true, text: 'Days Ago' }
-                            },
-                            y: {
-                                title: { display: true, text: 'Price (USD)' }
-                            }
+                            x: { title: { display: true, text: 'Days Ago' }},
+                            y: { title: { display: true, text: 'Price (USD)' }}
                         }
                     }
                 });
@@ -250,30 +265,26 @@ permalink: /portfolio/
             }
         }
 
-        // Close Modal function
         function closeModal() {
             document.getElementById('crypto-modal').style.display = 'none';
         }
 
-        // Add click event to close modal when clicking outside the modal content
         window.onclick = function(event) {
             const modal = document.getElementById('crypto-modal');
-            if (event.target === modal) {
-                closeModal();
-            }
+            if (event.target === modal) closeModal();
         }
 
-        // Investment function (Placeholder)
         function investInCrypto() {
-            const amount = prompt("Enter the amount you want to invest:");
-            if (amount && amount > 0) {
-                alert(`You've invested $${amount} in ${document.getElementById('modal-crypto-name').innerText}.`);
+            const amount = parseFloat(prompt("Enter the amount you want to invest:"));
+            if (amount && amount > 0 && amount <= userBalance) {
+                userBalance -= amount;
+                document.getElementById('user-balance').innerText = userBalance.toFixed(2);
+                alert(`You've invested $${amount.toFixed(2)} in ${document.getElementById('modal-crypto-name').innerText}.`);
             } else {
-                alert("Invalid investment amount.");
+                alert("Invalid investment amount or insufficient balance.");
             }
         }
 
-        // Initialize the crypto list on page load
         fetchCryptos();
     </script>
 </body>
