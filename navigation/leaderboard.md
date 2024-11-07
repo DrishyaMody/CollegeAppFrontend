@@ -118,12 +118,12 @@ permalink: /leaderboard/
 <script>
     // Team data with link, balance, ROI, and team members
     const teamsData = [
-        { name: "Team Alpha", balance: 3200, roi: "15%", members: ["Alice", "Bob", "Charlie"], link: "https://example.com/team-alpha" },
-        { name: "Team Beta", balance: 2900, roi: "10%", members: ["David", "Eva", "Frank"], link: "https://example.com/team-beta" },
-        { name: "Team Gamma", balance: 2500, roi: "12%", members: ["George", "Helen", "Ivy"], link: "https://example.com/team-gamma" },
-        { name: "Team Delta", balance: 2100, roi: "11%", members: ["Jack", "Kara", "Liam"], link: "https://example.com/team-delta" },
-        { name: "Team Epsilon", balance: 4000, roi: "14%", members: ["Mona", "Nathan", "Olivia"], link: "https://example.com/team-epsilon" },
-        { name: "Team Zeta", balance: 3000, roi: "9%", members: ["Paul", "Quincy", "Rachel"], link: "https://example.com/team-zeta" }
+        { name: "Team Alpha", balance: 3200, roi: "15%", members: ["Alice", "Bob", "Charlie"], link: "https://drishyamody.github.io/CollegeAppFrontend/Team/" },
+        { name: "Team Beta", balance: 2900, roi: "10%", members: ["David", "Eva", "Frank"], link: "https://drishyamody.github.io/CollegeAppFrontend/Team/" },
+        { name: "Team Gamma", balance: 2500, roi: "12%", members: ["George", "Helen", "Ivy"], link: "https://drishyamody.github.io/CollegeAppFrontend/Team/" },
+        { name: "Team Delta", balance: 2100, roi: "11%", members: ["Jack", "Kara", "Liam"], link: "https://drishyamody.github.io/CollegeAppFrontend/Team/" },
+        { name: "Team Epsilon", balance: 4000, roi: "14%", members: ["Mona", "Nathan", "Olivia"], link: "https://drishyamody.github.io/CollegeAppFrontend/Team/" },
+        { name: "Team Zeta", balance: 3000, roi: "9%", members: ["Paul", "Quincy", "Rachel"], link: "https://drishyamody.github.io/CollegeAppFrontend/Team/" }
     ];
 
     // Sort teams by balance in descending order
