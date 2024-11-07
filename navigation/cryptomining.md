@@ -10,11 +10,9 @@ permalink: /mining/
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crypto Mining Simulator</title>
-    <!-- Add Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Add modern CSS framework -->
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <style>
+        <style>
         /* More subtle RGB Border Animation for Dark Theme */
         @keyframes cyber-border-glow {
             0% { 
@@ -339,7 +337,7 @@ permalink: /mining/
     </style>
 </head>
 <body class="bg-gray-900 text-white min-h-screen p-6">
-    <div class="container mx-auto">
+        <div class="container mx-auto">
         <!-- Main Dashboard -->
         <div class="grid grid-cols-3 gap-4 mb-4">
             <!-- NiceHash Market -->
@@ -620,120 +618,39 @@ permalink: /mining/
         </div>
     </div>
     <script>
-        // Game State
-        const gameState = {
-            btcBalance: 0,
-            usdBalance: 0,  // Start with 0 USD
-            currentGpu: null,  // Start with no GPU
-            ownedGpus: [], // Array to store owned GPUs
-            miningActive: false,
-            poolFee: 0.02,
-            electricityRate: 0.12,
-            marketPrice: 40000,
-            difficulty: 1,
-            shares: 0,
-            temperature: 0,
-            powerDraw: 0,
-            hashrate: 0,
-            hashrateHistory: [],
-            profitHistory: [],
-            btcPrice: {
-                current: 65000,  // Starting at current approximate BTC price
-                history: [],
-                volatility: 0.02,  // 2% volatility
-                trend: 0,  // Current price trend
-            },
-            wallet: {
-                btc: 0,
-                usd: 0,
-            },
-            pendingBalance: 0,
-            pendingThreshold: {
-                nicehash: 0.001,    // 0.001 BTC minimum (4hr payout)
-                ethermine: 0.01,    // 0.01 BTC minimum (24hr payout)
-                f2pool: 0.005,      // 0.005 BTC minimum (12hr payout)
-                poolin: 0.0005      // 0.0005 BTC minimum (1hr payout)
-            },
-            selectedPool: 'nicehash',
-            lastPayout: Date.now()
-        };
-        // Initialize charts
-        let hashrateChart;
-        let profitChart;
-        // Initialize everything when DOM is loaded
-        document.addEventListener('DOMContentLoaded', function() {
+        let hashrateChart, profitChart;
+        let updateInterval;
+        // Initialize charts and setup
+        document.addEventListener('DOMContentLoaded', async () => {
             initializeCharts();
             setupEventListeners();
-            updateDisplay();
-            const shopModal = document.getElementById('gpu-shop-modal');
-            shopModal.classList.add('hidden'); // Ensure shop is hidden on load
-            // Setup shop button click handler
-            const shopButton = document.getElementById('gpu-shop');
-            shopButton.addEventListener('click', () => {
-                shopModal.classList.remove('hidden');
-                renderGpuShop(); // Render GPUs when opening shop
-            });
-            // Setup close button handler
-            const closeButton = document.getElementById('close-shop');
-            closeButton.addEventListener('click', () => {
-                shopModal.classList.add('hidden');
-            });
-            // Close shop when clicking outside
-            shopModal.addEventListener('click', (e) => {
-                if (e.target === shopModal) {
-                    shopModal.classList.add('hidden');
-                }
-            });
-            // Close on ESC key
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape') {
-                    shopModal.classList.add('hidden');
-                }
-            });
+            await updateMarketPrices();
+            await loadGPUs();
+            startPeriodicUpdates();
         });
         function initializeCharts() {
             const chartConfig = {
                 type: 'line',
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false,
                     animation: false,
                     scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: {
-                                color: 'rgba(0, 0, 0, 0.1)'  // Lighter grid lines
-                            },
-                            ticks: {
-                                color: 'rgba(0, 0, 0, 0.7)'  // Lighter axis labels
-                            }
-                        },
                         x: {
-                            grid: {
-                                color: 'rgba(0, 0, 0, 0.1)'  // Lighter grid lines
-                            },
-                            ticks: {
-                                color: 'rgba(0, 0, 0, 0.7)'  // Lighter axis labels
-                            }
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        },
+                        y: {
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
                         }
                     },
                     plugins: {
                         legend: {
-                            labels: {
-                                color: 'rgba(0, 0, 0, 0.9)'  // Brighter legend text
-                            }
+                            labels: { color: 'rgba(255, 255, 255, 0.9)' }
                         }
                     }
                 }
             };
-            // Hashrate Chart
-            const hashrateCtx = document.getElementById('hashrate-chart');
-            if (!hashrateCtx) {
-                console.error('Could not find hashrate-chart canvas');
-                return;
-            }
             hashrateChart = new Chart(
-                hashrateCtx.getContext('2d'),
+                document.getElementById('hashrate-chart').getContext('2d'),
                 {
                     ...chartConfig,
                     data: {
@@ -741,22 +658,16 @@ permalink: /mining/
                         datasets: [{
                             label: 'Hashrate (MH/s)',
                             data: [],
-                            borderColor: '#b144ff',  // Bright green (THE COLOR IS REVERSED)
-                            backgroundColor: 'rgba(177, 68, 255, 0.2)',  // Transparent green (THE COLOR IS REVERSED)
+                            borderColor: '#b144ff',
+                            backgroundColor: 'rgba(177, 68, 255, 0.2)',
                             borderWidth: 3,
                             fill: true
                         }]
                     }
                 }
             );
-            // Profit Chart
-            const profitCtx = document.getElementById('profit-chart');
-            if (!profitCtx) {
-                console.error('Could not find profit-chart canvas');
-                return;
-            }
             profitChart = new Chart(
-                profitCtx.getContext('2d'),
+                document.getElementById('profit-chart').getContext('2d'),
                 {
                     ...chartConfig,
                     data: {
@@ -764,8 +675,8 @@ permalink: /mining/
                         datasets: [{
                             label: 'Profit (USD)',
                             data: [],
-                            borderColor: '#BE0102',  // Bright cyan (THE COLOR IS REVERSED)
-                            backgroundColor: 'rgba(190, 1, 2, 0.2)',  // Transparent cyan (THE COLOR IS REVERSED)
+                            borderColor: '#BE0102',
+                            backgroundColor: 'rgba(190, 1, 2, 0.2)',
                             borderWidth: 3,
                             fill: true
                         }]
@@ -773,105 +684,107 @@ permalink: /mining/
                 }
             );
         }
-        // Make sure charts are initialized when DOM is loaded
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM loaded, initializing charts...');
-            initializeCharts();
-            setupEventListeners();
-            updateDisplay();
-        });
         function setupEventListeners() {
-            // Mining button
-            const mineButton = document.getElementById('start-mining');
-            mineButton.addEventListener('click', toggleMining);
-            // Shop button
-            const shopButton = document.getElementById('gpu-shop');
-            shopButton.addEventListener('click', () => {
-                document.getElementById('gpu-shop-modal').classList.remove('hidden');
-                renderGpuShop();
-            });
-            // Close shop button
-            const closeShopButton = document.getElementById('close-shop');
-            closeShopButton.addEventListener('click', () => {
-                document.getElementById('gpu-shop-modal').classList.add('hidden');
-            });
+            document.getElementById('start-mining').addEventListener('click', toggleMining);
+            document.getElementById('gpu-shop').addEventListener('click', openGpuShop);
+            document.getElementById('pool-selection').addEventListener('change', switchPool);
         }
-        function toggleMining() {
-            if (!gameState.currentGpu) {
-                alert('Please purchase a GPU first!');
-                return;
-            }
-            gameState.miningActive = !gameState.miningActive;
-            const mineButton = document.getElementById('start-mining');
-            if (gameState.miningActive) {
-                mineButton.textContent = 'Stop Mining';
-                mineButton.className = 'bg-red-500 hover:bg-red-600 px-4 py-2 rounded';
-                startMining();
-            } else {
-                mineButton.textContent = 'Start Mining';
-                mineButton.className = 'bg-green-500 hover:bg-green-600 px-4 py-2 rounded';
-                stopMining();
+        async function startPeriodicUpdates() {
+            updateInterval = setInterval(async () => {
+                await updateMarketPrices();
+                await updateMiningStats();
+            }, 5000);
+        }
+        // API Calls
+        async function updateMarketPrices() {
+            try {
+                const response = await fetch('http://localhost:8088/api/mining/markets');
+                const markets = await response.json();
+                updateMarketDisplay(markets);
+            } catch (error) {
+                console.error('Error fetching market prices:', error);
             }
         }
-        function startMining() {
-            if (!window.miningInterval) {
-                // Calculate first mining values immediately
-                calculateMining();
-                updateDisplay();
-                // Add first data point immediately
-                updateCharts();
-                // Start main mining calculations every second
-                window.miningInterval = setInterval(() => {
-                    calculateMining();
-                    updateDisplay();
-                }, 1000);
-                // Then update charts every 4 hours
-                window.chartUpdateInterval = setInterval(() => {
-                    updateCharts();
-                }, 14400000); // 4 hours in milliseconds
+        async function loadGPUs() {
+            try {
+                const response = await fetch('http://localhost:8088/api/mining/gpus');
+                const gpus = await response.json();
+                renderGpuShop(gpus);
+            } catch (error) {
+                console.error('Error loading GPUs:', error);
             }
         }
-        function stopMining() {
-            if (window.miningInterval) {
-                clearInterval(window.miningInterval);
-                window.miningInterval = null;
-            }
-            if (window.chartUpdateInterval) {
-                clearInterval(window.chartUpdateInterval);
-                window.chartUpdateInterval = null;
+        async function toggleMining() {
+            try {
+                const response = await fetch('http://localhost:8088/api/mining/toggle', {
+                    method: 'POST'
+                });
+                const result = await response.json();
+                updateMiningButton(result.active);
+            } catch (error) {
+                console.error('Error toggling mining:', error);
             }
         }
-        function calculateMining() {
-            if (!gameState.currentGpu) return;
-            const hashPower = gameState.currentGpu.hashRate;
-            gameState.hashrate = hashPower;
-            // Add random fluctuations to temperature and power
-            const tempVariation = Math.random() * 4 - 2; // ±2°C variation
-            const powerVariation = Math.random() * 20 - 10; // ±10W variation
-            gameState.temperature = gameState.currentGpu.temp + tempVariation;
-            gameState.powerDraw = gameState.currentGpu.powerConsumption + powerVariation;
-            // Simulate finding shares and add to pending balance
-            if (Math.random() < hashPower / gameState.difficulty / 1000) {
-                gameState.shares++;
-                const btcReward = (6.25 / 100000) * (1 - gameState.poolFee);
-                gameState.pendingBalance += btcReward;
-                // Check if we should process a payout
-                checkAndProcessPayout();
+        async function buyGpu(gpuId) {
+            try {
+                const response = await fetch(`http://localhost:8088/api/mining/gpu/buy/${gpuId}`, {
+                    method: 'POST'
+                });
+                const result = await response.json();
+                if (result.success) {
+                    showNotification(result.message);
+                    await loadGPUs();
+                    await updateMiningStats();
+                }
+            } catch (error) {
+                console.error('Error buying GPU:', error);
             }
-            // Calculate power cost
-            const hourlyPowerCost = (gameState.powerDraw / 1000) * gameState.electricityRate;
-            gameState.usdBalance -= hourlyPowerCost / 3600;
         }
-        function updateCharts() {
-            // Remove the miningActive check since we want the first point regardless
+        async function switchPool(event) {
+            try {
+                const response = await fetch('http://localhost:8088/api/mining/pool', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pool: event.target.value })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    showNotification(`Switched to ${event.target.value}`);
+                }
+            } catch (error) {
+                console.error('Error switching pool:', error);
+            }
+        }
+        async function updateMiningStats() {
+            try {
+                const response = await fetch('http://localhost:8088/api/mining/stats');
+                const stats = await response.json();
+                updateDisplay(stats);
+                updateCharts(stats);
+            } catch (error) {
+                console.error('Error updating mining stats:', error);
+            }
+        }
+        // UI Updates
+        function updateDisplay(stats) {
+            document.getElementById('btc-balance').textContent = stats.btcBalance.toFixed(8);
+            document.getElementById('pending-balance').textContent = stats.pendingBalance.toFixed(8);
+            document.getElementById('usd-value').textContent = `$${stats.usdBalance.toFixed(2)}`;
+            document.getElementById('hashrate').textContent = `${stats.hashrate.toFixed(2)} MH/s`;
+            document.getElementById('shares').textContent = stats.shares;
+            document.getElementById('gpu-temp').textContent = `${stats.temperature.toFixed(1)}°C`;
+            document.getElementById('power-draw').textContent = `${stats.powerDraw.toFixed(0)}W`;
+            document.getElementById('daily-revenue').textContent = `$${stats.dailyRevenue.toFixed(2)}`;
+            document.getElementById('power-cost').textContent = `$${stats.powerCost.toFixed(2)}`;
+        }
+        function updateCharts(stats) {
             const now = new Date().toLocaleTimeString();
-            // Update hashrate data
+            // Update hashrate chart
             hashrateChart.data.labels.push(now);
-            hashrateChart.data.datasets[0].data.push(gameState.hashrate);
-            // Update profit data
-            const currentProfit = gameState.btcBalance * gameState.marketPrice;
+            hashrateChart.data.datasets[0].data.push(stats.hashrate);
+            // Update profit chart
             profitChart.data.labels.push(now);
-            profitChart.data.datasets[0].data.push(currentProfit);
+            profitChart.data.datasets[0].data.push(stats.profit);
             // Keep only last 10 points
             if (hashrateChart.data.labels.length > 10) {
                 hashrateChart.data.labels.shift();
@@ -879,505 +792,116 @@ permalink: /mining/
                 profitChart.data.labels.shift();
                 profitChart.data.datasets[0].data.shift();
             }
-            // Update both charts
             hashrateChart.update();
             profitChart.update();
         }
-        function renderGpuShop() {
+        function updateMiningButton(isActive) {
+            const button = document.getElementById('start-mining');
+            if (isActive) {
+                button.textContent = 'Stop Mining';
+                button.className = 'bg-red-500 hover:bg-red-600 px-4 py-2 rounded';
+            } else {
+                button.textContent = 'Start Mining';
+                button.className = 'bg-green-500 hover:bg-green-600 px-4 py-2 rounded';
+            }
+        }
+        function renderGpuShop(gpus) {
             const gpuListElement = document.getElementById('gpu-list');
             gpuListElement.innerHTML = '';
-            // Define categories
+            // Group GPUs by category
             const categories = {
-                'Free Starter GPU': gpuList.filter(gpu => gpu.price === 0),
-                '💎 Budget GPUs ($50-500)': gpuList.filter(gpu => gpu.price > 0 && gpu.price <= 500),
-                '💎 Mid-Range GPUs ($500-1500)': gpuList.filter(gpu => gpu.price > 500 && gpu.price <= 1500),
-                '💎 High-End GPUs ($1500-3000)': gpuList.filter(gpu => gpu.price > 1500 && gpu.price <= 3000),
-                '💎 Premium GPUs ($3000+)': gpuList.filter(gpu => gpu.price > 3000)
+                'Free Starter GPU': gpus.filter(gpu => gpu.price === 0),
+                'Budget GPUs ($50-500)': gpus.filter(gpu => gpu.price > 0 && gpu.price <= 500),
+                'Mid-Range GPUs ($500-1500)': gpus.filter(gpu => gpu.price > 500 && gpu.price <= 1500),
+                'High-End GPUs ($1500-3000)': gpus.filter(gpu => gpu.price > 1500 && gpu.price <= 3000),
+                'Premium GPUs ($3000+)': gpus.filter(gpu => gpu.price > 3000)
             };
-            // Create sections for each category
-            Object.entries(categories).forEach(([categoryName, gpus]) => {
-                if (gpus.length === 0) return; // Skip empty categories
-                // Add category header
+            Object.entries(categories).forEach(([category, categoryGpus]) => {
+                if (categoryGpus.length === 0) return;
                 const categoryHeader = document.createElement('div');
-                categoryHeader.className = 'text-xl font-bold mb-4 mt-6';
-                // Set header color based on category
-                let headerColor;
-                if (categoryName.includes('Free')) headerColor = 'text-green-400';
-                else if (categoryName.includes('Budget')) headerColor = 'text-blue-400';
-                else if (categoryName.includes('Mid-Range')) headerColor = 'text-purple-400';
-                else if (categoryName.includes('High-End')) headerColor = 'text-orange-400';
-                else headerColor = 'text-red-400';
-                categoryHeader.className += ` ${headerColor}`;
-                categoryHeader.innerHTML = categoryName;
+                categoryHeader.className = `text-xl font-bold mb-4 mt-6 ${getCategoryColor(category)}`;
+                categoryHeader.textContent = category;
                 gpuListElement.appendChild(categoryHeader);
-                // Add divider line
-                const divider = document.createElement('div');
-                divider.className = `border-b ${headerColor.replace('text', 'border')} mb-4`;
-                gpuListElement.appendChild(divider);
-                // Add GPUs in this category
-                gpus.forEach(gpu => {
-                    // Your existing GPU card creation code here
-                    const dailyRevenue = calculateDailyRevenue(gpu);
-                    const dailyPowerCost = calculateDailyPowerCost(gpu);
-                    const dailyProfit = dailyRevenue - dailyPowerCost;
-                    const gpuCard = document.createElement('div');
-                    gpuCard.className = 'gpu-card mb-4';
-                    // Rest of your existing card HTML...
-                    gpuCard.innerHTML = `
-                        <div class="flex justify-between items-start">
-                            <div class="flex-1">
-                                <h3 class="text-lg font-bold ${headerColor}">${gpu.name}</h3>
-                                <div class="grid grid-cols-2 gap-4 mt-2">
-                                    <div class="text-sm">
-                                        <p class="text-gray-400">Performance</p>
-                                        <p class="text-white">⚡ ${gpu.hashRate} MH/s</p>
-                                        <p class="text-white">🔌 ${gpu.powerConsumption}W</p>
-                                        <p class="text-white">🌡️ ${gpu.temp}°C</p>
-                                    </div>
-                                    <div class="text-sm">
-                                        <p class="text-gray-400">Daily Estimates</p>
-                                        <p class="text-green-400">💰 $${dailyRevenue.toFixed(2)}</p>
-                                        <p class="text-red-400">💡 -$${dailyPowerCost.toFixed(2)}</p>
-                                        <p class="text-blue-400">📈 $${dailyProfit.toFixed(2)}</p>
-                                    </div>
-                                </div>
-                                <div class="mt-2 text-sm">
-                                    <p class="text-gray-400">Efficiency: ${gpu.efficiency.toFixed(3)} MH/W</p>
-                                </div>
-                            </div>
-                            <div class="text-right ml-4">
-                                <p class="text-xl font-bold ${headerColor}">
-                                    ${gpu.price === 0 ? 'FREE' : '$' + gpu.price.toLocaleString()}
-                                </p>
-                                <button onclick="buyGpu(${gpuList.indexOf(gpu)})" 
-                                        class="bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded mt-2">
-                                    ${gpu.price === 0 ? 'Get Free' : 'Buy'}
-                                </button>
-                            </div>
-                        </div>
-                    `;
+                categoryGpus.forEach(gpu => {
+                    const gpuCard = createGpuCard(gpu, category);
                     gpuListElement.appendChild(gpuCard);
                 });
             });
         }
-        function buyGpu(index) {
-            const gpu = gpuList[index];
-            if (gpu.price === 0 || gameState.usdBalance >= gpu.price) {
-                // Check if we already own this GPU
-                if (!gameState.ownedGpus.some(ownedGpu => ownedGpu.name === gpu.name)) {
-                    if (gpu.price > 0) {
-                        gameState.usdBalance -= gpu.price;
-                        // Convert some USD price to BTC equivalent and subtract it
-                        const btcCost = gpu.price / gameState.btcPrice.current;
-                        gameState.btcBalance -= btcCost;
-                    }
-                    gameState.ownedGpus.push(gpu); // Add to owned GPUs
-                } else {
-                    alert('You already own this GPU!');
-                    return;
-                }
-                gameState.currentGpu = gpu;
-                document.getElementById('gpu-shop-modal').classList.add('hidden');
-                document.getElementById('current-gpu').textContent = gpu.name;
-                updateDisplay();
-                updateGpuInventory();
-                alert(`Successfully acquired ${gpu.name}!`);
-            } else {
-                alert('Insufficient funds!');
-            }
-        }
-        function updateDisplay() {
-            // Update BTC balance without pending amount in parentheses
-            document.getElementById('btc-balance').textContent = gameState.btcBalance.toFixed(8);
-            // Update pending balance in its own element
-            document.getElementById('pending-balance').textContent = gameState.pendingBalance.toFixed(8);
-            // Update USD value - should show actual USD balance, not just BTC converted to USD
-            document.getElementById('usd-value').textContent = `$${gameState.usdBalance.toFixed(2)}`;
-            // Update other stats
-            document.getElementById('hashrate').textContent = `${gameState.currentGpu ? gameState.currentGpu.hashRate.toFixed(2) : '0'} MH/s`;
-            document.getElementById('shares').textContent = gameState.shares;
-            document.getElementById('gpu-temp').textContent = `${gameState.temperature.toFixed(1)}°C`;
-            document.getElementById('power-draw').textContent = `${gameState.powerDraw.toFixed(0)}W`;
+        function createGpuCard(gpu, category) {
+            const card = document.createElement('div');
+            card.className = `gpu-card mb-4 ${getCategoryClass(category)}`;
             // Calculate daily estimates
-            if (gameState.currentGpu) {
-                const dailyBtc = (gameState.btcBalance * 24);
-                const dailyRevenue = dailyBtc * gameState.marketPrice;
-                const dailyPowerCost = (gameState.powerDraw / 1000) * gameState.electricityRate * 24; 
-                document.getElementById('daily-revenue').textContent = `$${dailyRevenue.toFixed(2)}`;
-                document.getElementById('power-cost').textContent = `$${dailyPowerCost.toFixed(2)}`;
-            }
-        }
-        // Market price updates
-        setInterval(() => {
-            gameState.marketPrice *= (1 + (Math.random() * 0.002 - 0.001));
-            gameState.difficulty *= (Math.random() < 0.1) ? (1 + (Math.random() * 0.1 - 0.05)) : 1;
-            if (gameState.miningActive) updateDisplay();
-        }, 5000);
-        // Add mining profitability calculation
-        function updateMiningProfitability() {
-            if (!gameState.currentGpu) return;
-            const btcPrice = gameState.btcPrice.current;
-            const hashrate = gameState.currentGpu.hashRate;
-            const powerCost = (gameState.currentGpu.powerConsumption / 1000) * gameState.electricityRate * 24;
-            // Calculate daily BTC mining estimate
-            const dailyBtc = (hashrate * 86400) / (gameState.difficulty * 1e12);
-            const dailyRevenue = dailyBtc * btcPrice;
-            const dailyProfit = dailyRevenue - powerCost;
-            // Update UI
-            document.getElementById('btc-price').textContent = `$${btcPrice.toLocaleString(undefined, {maximumFractionDigits: 2})}`;
-            document.getElementById('daily-revenue').textContent = `$${dailyRevenue.toLocaleString(undefined, {maximumFractionDigits: 2})}`;
-            document.getElementById('daily-profit').textContent = `$${dailyProfit.toLocaleString(undefined, {maximumFractionDigits: 2})}`;
-        }
-        const gpuList = [
-            // Free Starter GPU
-            { 
-                name: "NVIDIA GeForce GT 1030", 
-                price: 0, 
-                hashRate: 1.55,         // MH/s
-                powerConsumption: 30,  // Watts
-                efficiency: 0.05,      // MH/s per watt
-                temp: 65              // °C
-            },
-            // Budget GPUs ($50-500)
-            { 
-                name: "NVIDIA GeForce GTX 1050", 
-                price: 150, 
-                hashRate: 14, 
-                powerConsumption: 75,
-                efficiency: 0.19,
-                temp: 67
-            },
-            { 
-                name: "AMD RX 570 8GB", 
-                price: 250, 
-                hashRate: 28, 
-                powerConsumption: 120,
-                efficiency: 0.23,
-                temp: 70
-            },
-            { 
-                name: "NVIDIA GeForce GTX 1060 6GB", 
-                price: 400, 
-                hashRate: 22, 
-                powerConsumption: 120,
-                efficiency: 0.18,
-                temp: 68
-            },
-            // Mid-Range GPUs ($500-1500)
-            { 
-                name: "NVIDIA GeForce GTX 1660 SUPER", 
-                price: 800, 
-                hashRate: 31, 
-                powerConsumption: 125,
-                efficiency: 0.25,
-                temp: 69
-            },
-            { 
-                name: "AMD RX 5600 XT", 
-                price: 1000, 
-                hashRate: 40, 
-                powerConsumption: 150,
-                efficiency: 0.27,
-                temp: 71
-            },
-            { 
-                name: "NVIDIA RTX 2060", 
-                price: 1200, 
-                hashRate: 32, 
-                powerConsumption: 160,
-                efficiency: 0.20,
-                temp: 70
-            },
-            { 
-                name: "NVIDIA RTX 2070", 
-                price: 1400, 
-                hashRate: 42, 
-                powerConsumption: 175,
-                efficiency: 0.24,
-                temp: 71
-            },
-            // High-End GPUs ($1500-3000)
-            { 
-                name: "NVIDIA RTX 3060 Ti", 
-                price: 1700, 
-                hashRate: 60, 
-                powerConsumption: 200,
-                efficiency: 0.30,
-                temp: 70
-            },
-            { 
-                name: "NVIDIA RTX 3070", 
-                price: 2000, 
-                hashRate: 62, 
-                powerConsumption: 220,
-                efficiency: 0.28,
-                temp: 71
-            },
-            { 
-                name: "NVIDIA RTX 3080", 
-                price: 2300, 
-                hashRate: 64, 
-                powerConsumption: 300,
-                efficiency: 0.21,
-                temp: 73
-            },
-            { 
-                name: "NVIDIA RTX 3090", 
-                price: 2800, 
-                hashRate: 98, 
-                powerConsumption: 320,
-                efficiency: 0.31,
-                temp: 72
-            },
-            // Premium GPUs ($3000+)
-            { 
-                name: "NVIDIA RTX 4070", 
-                price: 3200, 
-                hashRate: 100, 
-                powerConsumption: 285,
-                efficiency: 0.35,
-                temp: 71
-            },
-            { 
-                name: "AMD RX 7900 XTX", 
-                price: 3500, 
-                hashRate: 110, 
-                powerConsumption: 355,
-                efficiency: 0.31,
-                temp: 73
-            },
-            { 
-                name: "NVIDIA RTX 4080", 
-                price: 3800, 
-                hashRate: 130, 
-                powerConsumption: 320,
-                efficiency: 0.41,
-                temp: 73
-            },
-            { 
-                name: "NVIDIA RTX 4090", 
-                price: 4000, 
-                hashRate: 140, 
-                powerConsumption: 450,
-                efficiency: 0.31,
-                temp: 75
-            }
-        ];
-        // Helper functions for calculations
-        function calculateDailyRevenue(gpu) {
-            const btcPerDay = (gpu.hashRate * 86400) / (gameState.difficulty * 1e12);
-            return btcPerDay * gameState.btcPrice.current;
-        }
-        function calculateDailyPowerCost(gpu) {
-            const dailyKwh = (gpu.powerConsumption * 24) / 1000;
-            return dailyKwh * gameState.electricityRate;
-        }
-        async function updateAllMarketPrices() {
-            const markets = ['btc', 'eth', 'f2p'];
-            // Show loading state
-            markets.forEach(id => {
-                const priceElement = document.getElementById(`${id}-price`);
-                if (priceElement) priceElement.textContent = 'Loading...';
-            });
-            try {
-                const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,ftx-token&vs_currencies=usd&include_24hr_change=true', {
-                    mode: 'cors',
-                    headers: {
-                        'Access-Control-Allow-Origin': '*'
-                    }
-                });
-                if (!response.ok) throw new Error('Network response was not ok');
-                const data = await response.json();
-                // Update markets except NiceHash
-                updatePriceDisplay('btc', data.bitcoin);
-                updatePriceDisplay('eth', data.ethereum);
-                updatePriceDisplay('f2p', data['ftx-token']);
-                // Update game state with new BTC price
-                if (data.bitcoin && data.bitcoin.usd) {
-                    gameState.btcPrice.current = data.bitcoin.usd;
-                }
-            } catch (error) {
-                console.error('Error fetching market prices:', error);
-                markets.forEach(id => {
-                    const priceElement = document.getElementById(`${id}-price`);
-                    if (priceElement) priceElement.textContent = 'API Error';
-                });
-            }
-        }
-        async function updateNiceHashPrice() {
-            const priceElement = document.getElementById('nice-price');
-            const changeElement = document.getElementById('nice-change');
-            try {
-                // Simulate NiceHash price based on Bitcoin price
-                const btcPrice = gameState.btcPrice.current;
-                const nicePrice = btcPrice * 0.00002 * (1 + (Math.random() * 0.1 - 0.05)); // Random variation ±5%
-                const change = (Math.random() * 4 - 2); // Random 24h change between -2% and +2%   
-                // Update display
-                if (priceElement) priceElement.textContent = `$${nicePrice.toFixed(2)}`;
-                if (changeElement) {
-                    changeElement.textContent = `${change.toFixed(2)}%`;
-                    changeElement.style.color = change >= 0 ? '#2ecc71' : '#e74c3c';
-                }
-            } catch (error) {
-                console.error('Error updating NiceHash price:', error);
-                if (priceElement) priceElement.textContent = 'Error';
-                if (changeElement) {
-                    changeElement.textContent = '0.00%';
-                    changeElement.style.color = '#ffffff';
-                }
-            }
-        }
-        // Helper function to update display
-        function updatePriceDisplay(id, data) {
-            if (!data || !data.usd) return;  // Skip if data is invalid
-            const priceElement = document.getElementById(`${id}-price`);
-            const changeElement = document.getElementById(`${id}-change`);
-            if (priceElement) {
-                const formattedPrice = data.usd.toLocaleString('en-US', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                });
-                priceElement.textContent = `$${formattedPrice}`;
-            }
-            if (changeElement) {
-                const changeValue = data.usd_24h_change.toFixed(2);
-                changeElement.textContent = `${changeValue}%`;
-                changeElement.style.color = data.usd_24h_change >= 0 ? '#2ecc71' : '#e74c3c';
-            }
-        }
-        // Update all prices every hour
-        setInterval(() => {
-            updateAllMarketPrices();
-            updateNiceHashPrice();
-        }, 3600000);
-        // Initial update when page loads
-        document.addEventListener('DOMContentLoaded', () => {
-            updateAllMarketPrices();
-            updateNiceHashPrice();
-        });
-        // Add GPU inventory display and switching functionality
-        function updateGpuInventory() {
-            const inventoryContainer = document.getElementById('gpu-inventory');
-            inventoryContainer.innerHTML = '<h2 class="text-xl font-bold mb-4">Your GPUs</h2>';
-            gameState.ownedGpus.forEach(gpu => {
-                const gpuElement = document.createElement('div');
-                gpuElement.className = 'gpu-inventory-item flex justify-between items-center p-2 mb-2 bg-gray-800 rounded';
-                gpuElement.innerHTML = `
-                    <div>
-                        <span class="font-bold ${gpu === gameState.currentGpu ? 'text-green-400' : 'text-white'}">${gpu.name}</span>
-                        <span class="text-sm text-gray-400 ml-2">${gpu.hashRate} MH/s</span>
+            const dailyRevenue = gpu.hashRate * 86400 / (1e12); // Simplified calculation for demo
+            const dailyPowerCost = (gpu.powerConsumption * 24) / 1000 * 0.12; // Assuming $0.12 per kWh
+            const dailyProfit = dailyRevenue - dailyPowerCost;
+            const roi = gpu.price / dailyProfit;
+            card.innerHTML = `
+                <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                        <h3 class="text-lg font-bold ${getCategoryColor(category)}">${gpu.name}</h3>
+                        <div class="grid grid-cols-2 gap-4 mt-2">
+                            <div class="text-sm">
+                                <p class="text-gray-400">Performance</p>
+                                <p class="text-white">⚡ ${gpu.hashRate} MH/s</p>
+                                <p class="text-white">🔌 ${gpu.powerConsumption}W</p>
+                                <p class="text-white">🌡️ ${gpu.temperature}°C</p>
+                            </div>
+                            <div class="text-sm">
+                                <p class="text-gray-400">Daily Estimates</p>
+                                <p class="text-green-400">💰 $${dailyRevenue.toFixed(2)}</p>
+                                <p class="text-red-400">💡 -$${dailyPowerCost.toFixed(2)}</p>
+                                <p class="text-blue-400">📈 $${dailyProfit.toFixed(2)}</p>
+                            </div>
+                        </div>
+                        <div class="mt-2 text-sm">
+                            <p class="text-gray-400">Efficiency: ${gpu.efficiency.toFixed(3)} MH/W</p>
+                            <p class="text-gray-400">ROI: ${roi.toFixed(1)} days</p>
+                        </div>
                     </div>
-                    <button onclick="switchGpu('${gpu.name}')" 
-                            class="px-3 py-1 rounded ${gpu === gameState.currentGpu ? 'bg-green-600' : 'bg-blue-600'} hover:bg-opacity-80">
-                        ${gpu === gameState.currentGpu ? 'Active' : 'Switch'}
-                    </button>
-                `;
-                inventoryContainer.appendChild(gpuElement);
-            });
-        }
-        // Add switchGpu function
-        function switchGpu(gpuName) {
-            const gpu = gameState.ownedGpus.find(g => g.name === gpuName);
-            if (gpu) {
-                gameState.currentGpu = gpu;
-                document.getElementById('current-gpu').textContent = gpu.name;
-                updateDisplay();
-                updateGpuInventory();
-            }
-        }
-        function checkAndProcessPayout() {
-            const now = Date.now();
-            const pool = gameState.selectedPool;
-            // Define payout intervals in milliseconds
-            const payoutIntervals = {
-                nicehash: 4 * 60 * 60 * 1000,    // 4 hours
-                ethermine: 24 * 60 * 60 * 1000,  // 24 hours
-                f2pool: 12 * 60 * 60 * 1000,     // 12 hours
-                bitcoin: 1 * 60 * 60 * 1000      // 1 hour
-            };
-            // Check if enough time has passed since last payout
-            if ((now - gameState.lastPayout) >= payoutIntervals[pool]) {
-                // Process payout
-                if (gameState.pendingBalance > 0) {
-                    // Add pending balance to main balance
-                    gameState.btcBalance += gameState.pendingBalance;
-                    // Convert to USD at current market price
-                    gameState.usdBalance += gameState.pendingBalance * gameState.btcPrice.current;
-                    // Show notification
-                    showNotification(`Payout received: ${gameState.pendingBalance.toFixed(8)} BTC`);
-                    // Reset pending balance and update last payout time
-                    gameState.pendingBalance = 0;
-                    gameState.lastPayout = now;
-                    // Update display
-                    updateDisplay();
-                }
-            }
-            // Add debug logging
-            console.log(`Checking payout...
-                Pool: ${pool}
-                Time since last payout: ${((now - gameState.lastPayout) / (60 * 60 * 1000)).toFixed(2)} hours
-                Required interval: ${(payoutIntervals[pool] / (60 * 60 * 1000))} hours`);
-        }
-        /*
-        // **TESTING THE PAYOUTS**
-        function testPayout(hours) {
-            const poolSelect = document.querySelector('select');
-            const selectedPool = poolSelect.value;
-            gameState.selectedPool = selectedPool;
-            // Define base amounts per hour for each pool (accounting for their fees)
-            const poolRates = {
-                nicehash: 0.0001,    // 2% fee
-                ethermine: 0.00012,  // 1% fee (highest payout due to lowest fee)
-                f2pool: 0.000095,    // 2.5% fee
-                bitcoin: 0.00009     // 3% fee (lowest payout due to highest fee)
-            };
-            // Calculate payout based on pool rate and hours
-            const baseAmount = poolRates[selectedPool];
-            const testAmount = baseAmount * hours;
-            // Add the test amount to pending balance
-            gameState.pendingBalance = testAmount;
-            // Set last payout to X hours ago
-            gameState.lastPayout = Date.now() - (hours * 60 * 60 * 1000);
-            // Force check payout
-            checkAndProcessPayout();
-            updateDisplay();
-        }
-        // Add test UI
-        document.body.insertAdjacentHTML('beforeend', `
-            <div class="fixed top-4 right-4 bg-gray-800 p-4 rounded shadow-lg">
-                <h3 class="text-white mb-2">Test Pool Payouts</h3>
-                <div class="flex gap-2">
-                    <button onclick="testPayout(1)" class="bg-blue-500 hover:bg-blue-600 px-3 py-1 rounded text-white">
-                        Test 1hr
-                    </button>
-                    <button onclick="testPayout(4)" class="bg-green-500 hover:bg-green-600 px-3 py-1 rounded text-white">
-                        Test 4hr
-                    </button>
-                    <button onclick="testPayout(12)" class="bg-purple-500 hover:bg-purple-600 px-3 py-1 rounded text-white">
-                        Test 12hr
-                    </button>
-                    <button onclick="testPayout(24)" class="bg-red-500 hover:bg-red-600 px-3 py-1 rounded text-white">
-                        Test 24hr
-                    </button>
+                    <div class="text-right ml-4">
+                        <p class="text-xl font-bold ${getCategoryColor(category)}">
+                            ${gpu.price === 0 ? 'FREE' : '$' + gpu.price.toLocaleString()}
+                        </p>
+                        <button onclick="buyGpu(${gpu.id})" 
+                                class="bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded mt-2">
+                            ${gpu.price === 0 ? 'Get Free' : 'Buy'}
+                        </button>
+                    </div>
                 </div>
-            </div>
-        `);
-        */
-        // Add notification function
+            `;
+            return card;
+        }
         function showNotification(message) {
-            // Create notification element
             const notification = document.createElement('div');
             notification.className = 'fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-2 rounded shadow-lg transition-opacity duration-500';
             notification.textContent = message;
-            // Add to document
             document.body.appendChild(notification);
-            // Remove after 3 seconds
             setTimeout(() => {
                 notification.style.opacity = '0';
-                setTimeout(() => {
-                    notification.remove();
-                }, 500);
+                setTimeout(() => notification.remove(), 500);
             }, 3000);
+        }
+        // Utility functions
+        function getCategoryColor(category) {
+            const colors = {
+                'Free Starter GPU': 'text-green-400',
+                'Budget GPUs ($50-500)': 'text-blue-400',
+                'Mid-Range GPUs ($500-1500)': 'text-purple-400',
+                'High-End GPUs ($1500-3000)': 'text-orange-400',
+                'Premium GPUs ($3000+)': 'text-red-400'
+            };
+            return colors[category] || 'text-white';
+        }
+        function getCategoryClass(category) {
+            const classes = {
+                'Free Starter GPU': 'starter',
+                'Budget GPUs ($50-500)': 'budget',
+                'Mid-Range GPUs ($500-1500)': 'mid-range',
+                'High-End GPUs ($1500-3000)': 'high-end',
+                'Premium GPUs ($3000+)': 'premium'
+            };
+            return classes[category] || '';
         }
     </script>
 </body>
