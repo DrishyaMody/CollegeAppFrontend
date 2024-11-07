@@ -10,7 +10,6 @@ permalink: /login/
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Authentication</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <script src="{{site.baseurl}}/assets/js/api/config.js"></script>
     <style>
         /* Global Styles */
         body {
@@ -128,6 +127,7 @@ permalink: /login/
                 'X-Origin': 'client'
             },
         };
+        
         // Re-define the login function here
         function login(options) {
             const requestOptions = {
@@ -144,6 +144,8 @@ permalink: /login/
                     document.getElementById(options.message).textContent = errorMsg;
                     return;
                 }
+                // Store email in localStorage upon successful login
+                localStorage.setItem("userEmail", options.body.email);
                 options.callback();
             })
             .catch(error => {
@@ -151,6 +153,7 @@ permalink: /login/
                 document.getElementById(options.message).textContent = 'Possible CORS or service down error: ' + error;
             });
         }
+
         // Function to handle login
         document.getElementById("loginForm").addEventListener("submit", function (e) {
             e.preventDefault();
@@ -166,10 +169,11 @@ permalink: /login/
                 callback: () => {
                     document.getElementById("loginMessage").classList.add("success");
                     document.getElementById("loginMessage").textContent = "Login successful!";
-                    setTimeout(() => window.location.href = "/CollegeAppFrontend/teams/", 1000);  // Redirect to /portfolio on success
+                    setTimeout(() => window.location.href = "/CollegeAppFrontend/teams/", 1000);  // Redirect to /teams on success
                 }
             });
         });
+
         // Function to handle signup
         document.getElementById("signupForm").addEventListener("submit", function (e) {
             e.preventDefault();
@@ -186,9 +190,11 @@ permalink: /login/
             })
             .then(response => {
                 if (response.ok) {
+                    // Store email in localStorage upon successful signup
+                    localStorage.setItem("userEmail", document.getElementById("signupEmail").value);
                     document.getElementById("signupMessage").classList.add("success");
                     document.getElementById("signupMessage").textContent = "Signup successful! Redirecting...";
-                    setTimeout(() => window.location.href = "/CollegeAppFrontend/teams", 1000);  // Redirect to /portfolio on success
+                    setTimeout(() => window.location.href = "/CollegeAppFrontend/teams", 1000);  // Redirect to /teams on success
                 } else {
                     return response.json().then(data => {
                         throw new Error(data.message || "Signup failed.");
