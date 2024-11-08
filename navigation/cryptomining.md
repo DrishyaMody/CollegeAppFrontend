@@ -617,7 +617,28 @@ permalink: /mining/
             </div>
         </div>
     </div>
-    <script>
+    <script type="module">
+        // At the start of your script tag, add this line to make buyGpu globally available
+        window.buyGpu = async function(gpuId) {
+            try {
+                const options = {
+                    ...fetchOptions,
+                    method: 'POST',
+                    cache: 'no-cache'
+                };
+                const response = await fetch(`${javaURI}/api/mining/gpu/buy/${gpuId}`, options);
+                const result = await response.json();
+                if (result.success) {
+                    showNotification(result.message);
+                    await loadGPUs();
+                    await updateMiningStats();
+                }
+            } catch (error) {
+                console.error('Error buying GPU:', error);
+                showNotification('Error buying GPU: ' + error.message);
+            }
+        }
+        import { login, javaURI, fetchOptions } from '{{ site.baseurl }}/assets/js/api/config.js'; //imports config.js
         let hashrateChart, profitChart;
         let updateInterval;
         // Initialize charts and setup
@@ -698,7 +719,12 @@ permalink: /mining/
         // API Calls
         async function updateMarketPrices() {
             try {
-                const response = await fetch('http://localhost:8088/api/mining/markets');
+                const options = {
+                    ...fetchOptions,
+                    method: 'GET',
+                    cache: 'no-cache'
+                };
+                const response = await fetch(`${javaURI}/api/mining/market`, options);
                 const markets = await response.json();
                 updateMarketDisplay(markets);
             } catch (error) {
@@ -707,7 +733,12 @@ permalink: /mining/
         }
         async function loadGPUs() {
             try {
-                const response = await fetch('http://localhost:8088/api/mining/gpus');
+                const options = {
+                    ...fetchOptions,
+                    method: 'GET',
+                    cache: 'no-cache'
+                };
+                const response = await fetch(`${javaURI}/api/mining/shop`, options);
                 const gpus = await response.json();
                 renderGpuShop(gpus);
             } catch (error) {
@@ -716,9 +747,12 @@ permalink: /mining/
         }
         async function toggleMining() {
             try {
-                const response = await fetch('http://localhost:8088/api/mining/toggle', {
-                    method: 'POST'
-                });
+                const options = {
+                    ...fetchOptions,
+                    method: 'POST',
+                    cache: 'no-cache'
+                };
+                const response = await fetch(`${javaURI}/api/mining/toggle`, options);
                 const result = await response.json();
                 updateMiningButton(result.active);
             } catch (error) {
@@ -727,9 +761,12 @@ permalink: /mining/
         }
         async function buyGpu(gpuId) {
             try {
-                const response = await fetch(`http://localhost:8088/api/mining/gpu/buy/${gpuId}`, {
-                    method: 'POST'
-                });
+                const options = {
+                    ...fetchOptions,
+                    method: 'POST',
+                    cache: 'no-cache'
+                };
+                const response = await fetch(`${javaURI}/api/mining/gpu/buy/${gpuId}`, options);
                 const result = await response.json();
                 if (result.success) {
                     showNotification(result.message);
@@ -742,11 +779,13 @@ permalink: /mining/
         }
         async function switchPool(event) {
             try {
-                const response = await fetch('http://localhost:8088/api/mining/pool', {
+                const options = {
+                    ...fetchOptions,
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    cache: 'no-cache',
                     body: JSON.stringify({ pool: event.target.value })
-                });
+                };
+                const response = await fetch(`${javaURI}/api/mining/pool`, options);
                 const result = await response.json();
                 if (result.success) {
                     showNotification(`Switched to ${event.target.value}`);
@@ -757,7 +796,12 @@ permalink: /mining/
         }
         async function updateMiningStats() {
             try {
-                const response = await fetch('http://localhost:8088/api/mining/stats');
+                const options = {
+                    ...fetchOptions,
+                    method: 'GET',
+                    cache: 'no-cache'
+                };
+                const response = await fetch(`${javaURI}/api/mining/stats`, options);
                 const stats = await response.json();
                 updateDisplay(stats);
                 updateCharts(stats);
@@ -767,15 +811,16 @@ permalink: /mining/
         }
         // UI Updates
         function updateDisplay(stats) {
-            document.getElementById('btc-balance').textContent = stats.btcBalance.toFixed(8);
-            document.getElementById('pending-balance').textContent = stats.pendingBalance.toFixed(8);
-            document.getElementById('usd-value').textContent = `$${stats.usdBalance.toFixed(2)}`;
-            document.getElementById('hashrate').textContent = `${stats.hashrate.toFixed(2)} MH/s`;
-            document.getElementById('shares').textContent = stats.shares;
-            document.getElementById('gpu-temp').textContent = `${stats.temperature.toFixed(1)}°C`;
-            document.getElementById('power-draw').textContent = `${stats.powerDraw.toFixed(0)}W`;
-            document.getElementById('daily-revenue').textContent = `$${stats.dailyRevenue.toFixed(2)}`;
-            document.getElementById('power-cost').textContent = `$${stats.powerCost.toFixed(2)}`;
+            if (!stats) return; // Guard clause for undefined stats
+            document.getElementById('btc-balance').textContent = (stats.btcBalance || 0).toFixed(8);
+            document.getElementById('pending-balance').textContent = (stats.pendingBalance || 0).toFixed(8);
+            document.getElementById('usd-value').textContent = `$${(stats.usdBalance || 0).toFixed(2)}`;
+            document.getElementById('hashrate').textContent = `${(stats.hashrate || 0).toFixed(2)} MH/s`;
+            document.getElementById('shares').textContent = stats.shares || 0;
+            document.getElementById('gpu-temp').textContent = `${(stats.temperature || 0).toFixed(1)}°C`;
+            document.getElementById('power-draw').textContent = `${(stats.powerDraw || 0).toFixed(0)}W`;
+            document.getElementById('daily-revenue').textContent = `$${(stats.dailyRevenue || 0).toFixed(2)}`;
+            document.getElementById('power-cost').textContent = `$${(stats.powerCost || 0).toFixed(2)}`;
         }
         function updateCharts(stats) {
             const now = new Date().toLocaleTimeString();
@@ -863,7 +908,7 @@ permalink: /mining/
                         <p class="text-xl font-bold ${getCategoryColor(category)}">
                             ${gpu.price === 0 ? 'FREE' : '$' + gpu.price.toLocaleString()}
                         </p>
-                        <button onclick="buyGpu(${gpu.id})" 
+                        <button onclick="window.buyGpu(${gpu.id})" 
                                 class="bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded mt-2">
                             ${gpu.price === 0 ? 'Get Free' : 'Buy'}
                         </button>
@@ -918,6 +963,28 @@ permalink: /mining/
                 e.target.classList.add('hidden');
             }
         });
+        // Define all functions first
+        function updateMarketDisplay(markets) {
+            if (!markets) return; // Guard clause
+            const elements = {
+                'nice-price': markets.nicehash,
+                'nice-change': markets.nicehashChange,
+                'eth-price': markets.ethereum,
+                'eth-change': markets.ethereumChange,
+                'f2p-price': markets.f2pool,
+                'f2p-change': markets.f2poolChange,
+                'btc-price': markets.bitcoin,
+                'btc-change': markets.bitcoinChange
+            };
+            for (const [id, value] of Object.entries(elements)) {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.textContent = id.includes('price') ? 
+                        `$${(value || 0).toFixed(2)}` : 
+                        `${(value || 0).toFixed(2)}%`;
+                }
+            }
+        }
     </script>
 </body>
 </html>
