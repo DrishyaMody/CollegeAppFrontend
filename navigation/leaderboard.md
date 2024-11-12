@@ -9,7 +9,6 @@ permalink: /leaderboard/
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Leaderboard Page</title>
-    <link rel="stylesheet" href="styles.css">
     <style>
         * {
             margin: 0;
@@ -46,7 +45,7 @@ permalink: /leaderboard/
             font-size: 2em;
         }
 
-        /* New Button Style for Team Links */
+        /* Button Style for Team Links */
         button {
             background: #fbca1f;
             font-family: inherit;
@@ -83,7 +82,6 @@ permalink: /leaderboard/
             font-size: 0.9em;
             color: #333333;
         }
-
     </style>
 </head>
 <body>
@@ -116,23 +114,54 @@ permalink: /leaderboard/
 </div>
 
 <script>
-    // Team data with link, balance, ROI, and team members
-    const teamsData = [
-        { name: "Team Alpha", balance: 3200, roi: "15%", members: ["Alice", "Bob", "Charlie"], link: "https://drishyamody.github.io/CollegeAppFrontend/Team/" },
-        { name: "Team Beta", balance: 2900, roi: "10%", members: ["David", "Eva", "Frank"], link: "https://drishyamody.github.io/CollegeAppFrontend/Team/" },
-        { name: "Team Gamma", balance: 2500, roi: "12%", members: ["George", "Helen", "Ivy"], link: "https://drishyamody.github.io/CollegeAppFrontend/Team/" },
-        { name: "Team Delta", balance: 2100, roi: "11%", members: ["Jack", "Kara", "Liam"], link: "https://drishyamody.github.io/CollegeAppFrontend/Team/" },
-        { name: "Team Epsilon", balance: 4000, roi: "14%", members: ["Mona", "Nathan", "Olivia"], link: "https://drishyamody.github.io/CollegeAppFrontend/Team/" },
-        { name: "Team Zeta", balance: 3000, roi: "9%", members: ["Paul", "Quincy", "Rachel"], link: "https://drishyamody.github.io/CollegeAppFrontend/Team/" }
-    ];
+    // Fetch user data, group by team number, and calculate team stats
+    function fetchAndDisplayLeaderboard() {
+        fetch("http://localhost:8088/api/people")  // Correct API endpoint for all people
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Failed to fetch user data");
+                }
+                return response.json();
+            })
+            .then(people => {
+                // Group people by their team name
+                const teams = people.reduce((acc, person) => {
+                    const teamKey = person.team;
+                    if (!acc[teamKey]) {
+                        acc[teamKey] = { members: [], balance: 0 };
+                    }
+                    acc[teamKey].members.push(person.name);
+                    acc[teamKey].balance += person.balance;
+                    return acc;
+                }, {});
 
-    // Sort teams by balance in descending order
-    const sortedTeams = teamsData.sort((a, b) => b.balance - a.balance);
+                // Convert teams object into array and calculate ROI (example placeholder here)
+                const teamsArray = Object.entries(teams).map(([teamName, teamData]) => ({
+                    name: teamName,
+                    balance: teamData.balance,
+                    roi: ((teamData.balance / 5000) * 100).toFixed(2) + '%',  // Example ROI calculation
+                    members: teamData.members,
+                    link: `/leaderboard/team/${teamName}`  // Updated link structure (replace with actual endpoint as needed)
+                }));
+
+                // Sort teams by balance in descending order and display them
+                const sortedTeams = teamsArray.sort((a, b) => b.balance - a.balance);
+                populateLeaderboard(sortedTeams);
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                document.getElementById("team-list").innerHTML = `<p class="error">${error.message}</p>`;
+
+            });
+    }
 
     // Populate the leaderboard with ranked teams
     function populateLeaderboard(teams) {
         const teamList = document.getElementById('team-list');
         const template = document.getElementById('team-template').content;
+
+        // Clear any existing content
+        teamList.innerHTML = '';
 
         teams.forEach((team, index) => {
             const teamElement = document.importNode(template, true);
@@ -156,8 +185,8 @@ permalink: /leaderboard/
         });
     }
 
-    // Initialize leaderboard
-    populateLeaderboard(sortedTeams);
+    // Initialize leaderboard data fetch
+    fetchAndDisplayLeaderboard();
 </script>
 
 </body>

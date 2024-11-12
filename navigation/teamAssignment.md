@@ -109,7 +109,7 @@ permalink: /teams/
             <a href="/CollegeAppFrontend/portfolio" id="portfolioLink">Investing Portfolio</a>
             <a href="/CollegeAppFrontend/mining" id="miningLink">Crypto Mining</a>
             <a href="/CollegeAppFrontend/team" id="TeamLink">Team Stats</a>
-            <a href="/CollegeAppFrontend/Leaderboard" id="leaderboardLink">Leaderboard</a>
+            <a href="/CollegeAppFrontend/leaderboard" id="leaderboardLink">Leaderboard</a>
         </div>
 
         <div class="balance">
